@@ -7,7 +7,7 @@ import matplotlib.animation as animation
 #                   CONFIGURAION                           #
 ############################################################
 
-n = 70 # Number of point inside meat
+meat_points = 70 # Number of point inside meat
 desired_int_temp = 40 # The internal temperature at which heating stops
 ambient_temp = 20 # Temperature of the air and temperature of the meat before cookig
 pan_temp=110 # Temperature of the frying pan
@@ -17,7 +17,7 @@ num_frames = 3000  # Number of frames for the simulation
 flipping_interval=200 # How ofter to flip the meat
 
 settings="Configuration:"+ "\n"
-settings+="points="+str(n) + "\n"
+settings+="points="+str(meat_points) + "\n"
 settings+= "c="+str(c)+ "\n"
 settings+= "h="+str(h)+ "\n"
 settings+="desired_int_temp="+str(desired_int_temp)+ "\n"
@@ -29,9 +29,9 @@ settings+= "num_frames="+str(num_frames)+ "\n"
 
 which_side_on_pan = True
 desired_int_temp_reached=False
-a = np.zeros(n)
-for i in range(n):
-    a[i] = ambient_temp
+meat = np.zeros(meat_points)
+for i in range(meat_points):
+    meat[i] = ambient_temp
 
 
 
@@ -39,31 +39,31 @@ for i in range(n):
 #              Main simulation function                    #
 ############################################################
 
-def heat_transfer_simulation(a, heat_source_index=None):
+def heat_transfer_simulation(_meat, heat_source_index=None):
     global ambient_temp,c,h,pan_temp
-    n = len(a)
-    anew = np.copy(a)
+    n = len(_meat)
+    anew = np.copy(_meat)
         
     
 
     # Apply boundary conditions:
     if heat_source_index == 0:  # Left side heated
         anew[0] = pan_temp  # Maintain heat
-        anew[n - 1] = a[n - 1] - h * (a[n - 1] - ambient_temp)
+        anew[n - 1] = _meat[n - 1] - h * (_meat[n - 1] - ambient_temp)
 
     elif heat_source_index == n - 1:  # Right side heated
         anew[n - 1] = pan_temp  # Maintain heat
-        anew[0] = a[0] - h * (a[0] - ambient_temp)
+        anew[0] = _meat[0] - h * (_meat[0] - ambient_temp)
 
     else:  # No active heat source, both ends cool naturally
         ambient_temp = 20
-        anew[0] = a[0] - h * (a[0] - ambient_temp)
-        anew[n - 1] = a[n - 1] - h * (a[n - 1] - ambient_temp)
+        anew[0] = _meat[0] - h * (_meat[0] - ambient_temp)
+        anew[n - 1] = _meat[n - 1] - h * (_meat[n - 1] - ambient_temp)
 
    
    #          This for loop does the simulation               #
     for i in range(1, n - 1):
-        anew[i] = a[i] + c * (a[i - 1] - 2 * a[i] + a[i + 1])
+        anew[i] = _meat[i] + c * (_meat[i - 1] - 2 * _meat[i] + _meat[i + 1])
 
 
     return anew
@@ -80,29 +80,27 @@ def heat_transfer_simulation(a, heat_source_index=None):
 ############################################################
 
 
-fig, (ax, ax2) = plt.subplots(1, 2, figsize=(12, 6))  # Two plots side by side
-line, = ax.plot(a)
-line2, = ax2.plot(a)
-ax.set_xlabel("Position")
-ax.set_ylabel("Temperature °C")
-ax.set_title("Meat temperature profile")
-ax.set_ylim(0, pan_temp+10)  
-ax2.set_title("Temperature at the center")
-ax2.set_xlabel("Time")
-ax2.set_ylabel("Temperature °C")
-ax2.set_xlim(0, num_frames)  
-ax2.set_ylim(0, pan_temp+10)  
+fig, (Graph1, Graph2) = plt.subplots(1, 2, figsize=(12, 6))  # Two plots side by side
+line, = Graph1.plot(meat)
+line2, = Graph2.plot(meat)
+Graph1.set_xlabel("Position")
+Graph1.set_ylabel("Temperature °C")
+Graph1.set_title("Meat temperature profile")
+Graph1.set_ylim(0, pan_temp+10)  
+Graph2.set_title("Temperature at the center")
+Graph2.set_xlabel("Time")
+Graph2.set_ylabel("Temperature °C")
+Graph2.set_xlim(0, num_frames)  
+Graph2.set_ylim(0, pan_temp+10)  
 time_data = []  # List to store time (frames)
 temp_data = []  # List to store temperature at len(a)//2
-heat_source_line, = ax.plot([0, 0], [0, 140], color='red', linestyle='-', linewidth=4)
-marker_shown = False  # Flag to check if the marker has been placed
-marker, = ax.plot([], [], 'bo', markersize=8, label=str(desired_int_temp) +"°C Reached")     # Marker for first plot
-marker_2, = ax2.plot([], [], 'bo', markersize=8, label=str(desired_int_temp) +"°C Reached")  # Marker for second plot
-marker_max, = ax2.plot([], [], 'ro', markersize=8, label="Max Internal Temp")
-marker_max1, = ax.plot([], [], 'ro', markersize=8, label="Max Internal Temp")
-max_temp_text = ax2.text(0, 0, '', color='red', fontsize=10, verticalalignment='bottom', horizontalalignment='left')
-max_temp_text = ax2.text(0, 0, '', color='red', fontsize=10, verticalalignment='bottom', horizontalalignment='left')
-desired_temp_text = ax2.text(0, 0, '', color='blue', fontsize=10, verticalalignment='bottom', horizontalalignment='left')
+heat_source_line, = Graph1.plot([0, 0], [0, 140], color='red', linestyle='-', linewidth=4)
+marker_Graph1_T_reached, = Graph1.plot([], [], 'bo', markersize=8, label=str(desired_int_temp) +"°C Reached")     # Marker for first plot
+marker_Graph2_T_reached, = Graph2.plot([], [], 'bo', markersize=8, label=str(desired_int_temp) +"°C Reached")  # Marker for second plot
+marker_Graph2_MAX, = Graph2.plot([], [], 'ro', markersize=8, label="Max Internal Temp")
+marker_Graph1_MAX, = Graph1.plot([], [], 'ro', markersize=8, label="Max Internal Temp")
+max_temp_text = Graph2.text(0, 0, '', color='red', fontsize=10, verticalalignment='bottom', horizontalalignment='left')
+desired_temp_text = Graph2.text(0, 0, '', color='blue', fontsize=10, verticalalignment='bottom', horizontalalignment='left')
 
 
 
@@ -113,7 +111,7 @@ desired_temp_text = ax2.text(0, 0, '', color='blue', fontsize=10, verticalalignm
 
 
 def animate(frame):
-    global a, marker_shown, desired_int_temp, desired_int_temp_reached,num_frames,flipping_interval,which_side_on_pan
+    global meat, desired_int_temp, desired_int_temp_reached,num_frames,flipping_interval,which_side_on_pan
     if frame >= num_frames-1:
         ani.event_source.stop()  # Stop the animation when max frames reached
         return
@@ -128,49 +126,49 @@ def animate(frame):
     if which_side_on_pan:
         heat_source_index = 0
     else:
-        heat_source_index = n - 1
+        heat_source_index = meat_points - 1
     
     # And now we cook!
-    if a[len(a)//2] < desired_int_temp and desired_int_temp_reached==False:
-        a = heat_transfer_simulation(a, heat_source_index) # run simulation with heat sorce
+    if meat[len(meat)//2] < desired_int_temp and desired_int_temp_reached==False:
+        meat = heat_transfer_simulation(meat, heat_source_index) # run simulation with heat sorce
         heat_source_line.set_data([heat_source_index, heat_source_index], [0, 140])
         heat_source_line.set_visible(True)
-        marker.set_visible(False)
-        marker_2.set_visible(False)
+        marker_Graph1_T_reached.set_visible(False)
+        marker_Graph2_T_reached.set_visible(False)
         desired_temp_text.set_visible(False) 
 
     else: # when internal temperature is reached
         
-        a = heat_transfer_simulation(a) # run simulation without heat sorce
+        meat = heat_transfer_simulation(meat) # run simulation without heat sorce
         if not desired_int_temp_reached:# this runs only once
-            marker_2.set_data([frame], [a[len(a)//2]])
+            marker_Graph2_T_reached.set_data([frame], [meat[len(meat)//2]])
             desired_int_temp_reached = True
 
             # Update text at marker_2's position
-            desired_temp_text.set_position((frame, a[len(a)//2]))
+            desired_temp_text.set_position((frame, meat[len(meat)//2]))
             desired_temp_text.set_text(" Desired Temp " +  str(desired_int_temp)+ "°C. Heating stops")
             desired_temp_text.set_visible(True)
             heat_source_line.set_visible(False)
-            marker.set_data([len(a)//2], [desired_int_temp])
-            marker.set_visible(True)
-            marker_2.set_visible(True)
+            marker_Graph1_T_reached.set_data([len(meat)//2], [desired_int_temp])
+            marker_Graph1_T_reached.set_visible(True)
+            marker_Graph2_T_reached.set_visible(True)
 
     # Update stuff for the plot
-    line.set_ydata(a)
+    line.set_ydata(meat)
     time_data.append(frame)
-    temp_data.append(a[len(a)//2])
+    temp_data.append(meat[len(meat)//2])
     line2.set_data(time_data, temp_data)    
     max_temp = max(temp_data)
     max_index = temp_data.index(max_temp)
     max_time = time_data[max_index]
-    marker_max.set_data([max_time], [max_temp])
-    marker_max.set_visible(True)
-    marker_max1.set_data([len(a)//2], [max_temp])
-    marker_max1.set_visible(True)
+    marker_Graph2_MAX.set_data([max_time], [max_temp])
+    marker_Graph2_MAX.set_visible(True)
+    marker_Graph1_MAX.set_data([len(meat)//2], [max_temp])
+    marker_Graph1_MAX.set_visible(True)
     max_temp_text.set_position((max_time, max_temp))
     max_temp_text.set_text(f"Max Temp: {int(round(max_temp))}°C")
 
-    return line, line2, marker, marker_2, marker_max, marker_max1, heat_source_line, max_temp_text, desired_temp_text
+    return line, line2, marker_Graph1_T_reached, marker_Graph2_T_reached, marker_Graph2_MAX, marker_Graph1_MAX, heat_source_line, max_temp_text, desired_temp_text
 
 
 
